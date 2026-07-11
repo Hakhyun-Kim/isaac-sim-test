@@ -10,15 +10,17 @@ Havok physics middleware, and Varjo GPU pipelines — this repo adds the missing
 github.com/Hakhyun-Kim/deep-learning-study — every experiment scripted, reproducible,
 documented in README.md **including failures**.
 
-## Current status (as of 2026-07-11)
+## Current status (as of 2026-07-11, evening)
 
-- Scaffold complete: README, .gitignore, two experiment scripts. **Isaac Sim NOT installed yet** —
-  stopped before the ~8–10 GB download / EULA step; work moved to a different machine (this one).
-- Task plan remaining:
-  1. Create venv + install Isaac Sim (commands below)
-  2. Run `scripts/01_hello_physics.py` (headless falling-cube physics test)
-  3. Run `scripts/02_synthetic_camera.py` (Replicator RGB capture → output/synthetic_rgb.png)
-  4. Update README "Experiments" table + "Notes & findings" with real results
+- **Isaac Sim 5.1.0 installed and both experiments PASSED** on the original machine
+  (RTX 3050 Ti 4 GB, headless): 01 physics settles at exactly z=0.250 m; 02 produced
+  `assets/synthetic_rgb.png` (1280×720 RTX render). Results and gotchas are in README
+  "Notes & findings". The `.venv` lives at repo root (not committed).
+- Next candidates (see README "Next steps"): articulated robot headless, depth/semantic
+  annotators, domain randomization via `isaacsim.replicator.domain_randomization`.
+- Key gotcha for future scripts: Kit swallows Python `print()` into
+  `.venv/Lib/site-packages/isaacsim/kit/logs/Kit/Isaac-Sim Python/5.1/kit_*.log`
+  (lines tagged `[py stdout]`) — check there, not the console, when output seems missing.
 
 ## Verified install facts (checked 2026-07-11 against official docs)
 

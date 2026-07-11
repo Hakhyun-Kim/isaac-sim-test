@@ -6,6 +6,9 @@ env_isaacsim/
 __pycache__/
 *.pyc
 
+# experiment outputs (curated evidence is copied into assets/)
+output/
+
 # omniverse/kit caches & logs that land in the project
 .cache/
 logs/

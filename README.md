@@ -42,9 +42,35 @@ Running any script requires accepting the NVIDIA Omniverse EULA
 
 | # | Script | What it does | Status |
 |---|---|---|---|
-| 01 | `scripts/01_hello_physics.py` | Headless physics: cube drops onto ground plane, position logged per step | planned |
-| 02 | `scripts/02_synthetic_camera.py` | Synthetic data: render the scene to an RGB PNG via Replicator | planned |
+| 01 | `scripts/01_hello_physics.py` | Headless physics: cube drops onto ground plane, position logged per step | ✅ cube settles at exactly z = 0.250 m |
+| 02 | `scripts/02_synthetic_camera.py` | Synthetic data: render the scene to an RGB PNG via Replicator | ✅ 1280×720 RTX render, see below |
 
-## Notes & findings
+![Synthetic RGB render: three cubes on the default ground plane](assets/synthetic_rgb.png)
 
-_(updated as experiments run)_
+## Notes & findings (2026-07-11)
+
+**Both experiments ran successfully, headless, on the 4 GB RTX 3050 Ti** — below
+min spec is workable for small scenes, at least without a viewport.
+
+- **Startup cost:** ~60 s of Kit extension loading + ~6 s app startup per run.
+  The first ~20 physics steps took ~2 minutes (lazy asset/physics init — the
+  default ground plane is fetched from Omniverse cloud assets on first use);
+  the remaining 160 steps then finished in ~2 s (~70 steps/s).
+- **Physics is exact:** a 0.5 m cube dropped from 2 m comes to rest at
+  z = 0.250 m — precisely half the cube size — within ~80 steps.
+- **Replicator RGB capture** (camera → render_product → `rgb` annotator) worked
+  as scripted on the first try; full run including RTX shader warmup was ~2.5 min.
+- **Gotcha — where did my `print()` go?** Kit captures Python stdout into its own
+  log rather than the console/redirect. Look in
+  `.venv/Lib/site-packages/isaacsim/kit/logs/Kit/Isaac-Sim Python/5.1/kit_*.log`
+  for lines tagged `[py stdout]`.
+- **Deprecation warnings** show the 5.x namespace migration in progress:
+  `omni.replicator.isaac` → `isaacsim.replicator.*`,
+  `omni.isaac.version` → `isaacsim.core.version`. New code should use the
+  `isaacsim.*` namespaces (as these scripts do for core APIs).
+
+### Next steps
+
+- Drive an articulated robot (e.g., a wheeled base or simple arm) headless
+- Multi-annotator synthetic data: depth + semantic segmentation alongside RGB
+- Try domain randomization via `isaacsim.replicator.domain_randomization`
