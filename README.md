@@ -69,6 +69,12 @@ min spec is workable for small scenes, at least without a viewport.
   `omni.isaac.version` → `isaacsim.core.version`. New code should use the
   `isaacsim.*` namespaces (as these scripts do for core APIs).
 
+## Study notes
+
+- [notes/01_physics_engines.md](notes/01_physics_engines.md) — Havok vs PhysX vs CARLA/Unreal
+  vs Isaac Sim: what's actually different, from someone who shipped with all of them.
+  Includes a question bank driving the next experiments.
+
 ### Next steps
 
 - Drive an articulated robot (e.g., a wheeled base or simple arm) headless
