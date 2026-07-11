@@ -86,7 +86,7 @@ Checklist style; ✅ = answered in this note / hands-on, ☐ = open. One experim
 ### C. Sensors & synthetic data (CARLA vs Isaac Sim)
 - ✅ What does a simulator add on top of a physics engine? (sensors, scenarios, ground truth, maps)
 - ☐ CARLA's raycast/shader LiDAR vs Isaac Sim's RTX ray-traced LiDAR: what artifacts differ? (I built LiDAR validation at 42dot — write the comparison from experience + docs)
-- ☐ Reproduce my 42dot workflow in miniature: spawn scene → LiDAR sweep → point cloud dump in Isaac Sim.
+- ✅ Reproduce my 42dot workflow in miniature: spawn scene → LiDAR sweep → point cloud dump in Isaac Sim. (`scripts/06_lidar_pointcloud.py` — 11.65 M points, occlusion shadows visible; see README findings for the four API gotchas it took to get there)
 - ☐ Domain randomization: what does `isaacsim.replicator.domain_randomization` randomize that CARLA can't (materials at the RTX level)?
 
 ### D. Ecosystem & positioning (DevRel angle)
@@ -96,7 +96,7 @@ Checklist style; ✅ = answered in this note / hands-on, ☐ = open. One experim
 - ☐ Havok under Microsoft today: where does it still win? (consoles, deterministic multiplayer at scale)
 
 ### E. Hands-on TODOs in this repo
-- ☐ 03: articulated robot (wheeled base or simple arm) headless
+- ✅ 03: articulated robot headless — Franka Panda, 9 DOF, joint targets tracked to 0.0044 rad
 - ☐ 04: multi-annotator capture (RGB + depth + semantic segmentation)
 - ☐ 05: domain randomization pass over the cube scene
-- ☐ 06: LiDAR point-cloud capture (ties to C)
+- ✅ 06: LiDAR point-cloud capture (ties to C) — RTX Example_Rotary, per-frame annotator polling

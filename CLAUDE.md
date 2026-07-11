@@ -10,17 +10,21 @@ Havok physics middleware, and Varjo GPU pipelines — this repo adds the missing
 github.com/Hakhyun-Kim/deep-learning-study — every experiment scripted, reproducible,
 documented in README.md **including failures**.
 
-## Current status (as of 2026-07-11, evening)
+## Current status (as of 2026-07-11, night)
 
-- **Isaac Sim 5.1.0 installed and both experiments PASSED** on the original machine
-  (RTX 3050 Ti 4 GB, headless): 01 physics settles at exactly z=0.250 m; 02 produced
-  `assets/synthetic_rgb.png` (1280×720 RTX render). Results and gotchas are in README
-  "Notes & findings". The `.venv` lives at repo root (not committed).
-- Next candidates (see README "Next steps"): articulated robot headless, depth/semantic
-  annotators, domain randomization via `isaacsim.replicator.domain_randomization`.
-- Key gotcha for future scripts: Kit swallows Python `print()` into
-  `.venv/Lib/site-packages/isaacsim/kit/logs/Kit/Isaac-Sim Python/5.1/kit_*.log`
-  (lines tagged `[py stdout]`) — check there, not the console, when output seems missing.
+- **Repo is PUBLIC** (user flipped it); cited in the NVIDIA DevRel resume.
+- **Four experiments passed** on the RTX 3050 Ti 4 GB, headless: 01 physics (z=0.250 m
+  exact), 02 Replicator RGB (assets/synthetic_rgb.png), 03 Franka articulation (9 DOF,
+  joint error 1.39→0.0044 rad in 80 steps), 06 RTX LiDAR (11.65 M points,
+  assets/lidar_topdown.png). All results + gotchas in README findings sections.
+- Remaining question-bank experiments: 04 multi-annotator (RGB+depth+semantic),
+  05 domain randomization.
+- Key gotchas for future scripts (details in README):
+  - Kit swallows `print()` into `.venv/Lib/site-packages/isaacsim/kit/logs/Kit/Isaac-Sim Python/5.1/kit_*.log` (`[py stdout]` lines).
+  - RTX lidar in 5.1: don't use `LidarRtx.get_current_frame()` (empty) or the deprecated
+    ScanBuffer annotator; attach `IsaacExtractRTXSensorPointCloudNoAccumulator` and poll
+    `get_data()` every step.
+  - Keep script prints ASCII — cp949 console + em-dash inside Kit = UnicodeEncodeError crash.
 
 ## Verified install facts (checked 2026-07-11 against official docs)
 

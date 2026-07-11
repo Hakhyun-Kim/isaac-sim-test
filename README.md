@@ -44,8 +44,12 @@ Running any script requires accepting the NVIDIA Omniverse EULA
 |---|---|---|---|
 | 01 | `scripts/01_hello_physics.py` | Headless physics: cube drops onto ground plane, position logged per step | ✅ cube settles at exactly z = 0.250 m |
 | 02 | `scripts/02_synthetic_camera.py` | Synthetic data: render the scene to an RGB PNG via Replicator | ✅ 1280×720 RTX render, see below |
+| 03 | `scripts/03_articulation_franka.py` | Articulation: command joint targets on a Franka Panda (9 DOF), headless | ✅ max joint error 1.39 → 0.0044 rad in 80 steps |
+| 06 | `scripts/06_lidar_pointcloud.py` | RTX LiDAR (Example_Rotary) scan → point cloud .npy + top-down view | ✅ 11.65 M points over 300 frames (~39 K/frame) |
 
 ![Synthetic RGB render: three cubes on the default ground plane](assets/synthetic_rgb.png)
+
+![LiDAR top-down view: ground rings, cube faces, and occlusion shadows](assets/lidar_topdown.png)
 
 ## Notes & findings (2026-07-11)
 
@@ -68,6 +72,33 @@ min spec is workable for small scenes, at least without a viewport.
   `omni.replicator.isaac` → `isaacsim.replicator.*`,
   `omni.isaac.version` → `isaacsim.core.version`. New code should use the
   `isaacsim.*` namespaces (as these scripts do for core APIs).
+
+### Findings from experiments 03 & 06 (same day, later)
+
+- **Articulation just works:** Franka Panda (5.1 asset path
+  `Robots/FrankaRobotics/FrankaPanda/franka.usd`) tracked joint position targets
+  from 1.39 rad max error to **0.0044 rad within 80 steps** — the
+  reduced-coordinate articulation behavior discussed in
+  [notes/01](notes/01_physics_engines.md), observed live on a 4 GB GPU.
+- **RTX LiDAR took four attempts** — each failure taught a 5.1 API reality:
+  1. `LidarRtx.get_current_frame()` returns only `rendering_time`/`rendering_frame`
+     in 5.1 even after `add_point_cloud_data_to_frame()` — the wrapper's data path
+     appears dead; use Replicator annotators directly.
+  2. The annotator was renamed: docs/4.x `RtxSensorCpuIsaacCreateRTXLidarScanBuffer`
+     → 5.1 `IsaacCreateRTXLidarScanBuffer` (the error message helpfully prints the
+     full registry).
+  3. The (deprecated) ScanBuffer annotator never accumulated data headless — the
+     per-frame `IsaacExtractRTXSensorPointCloudNoAccumulator` works **when polled
+     every step**; polling forces the SDG graph to evaluate.
+  4. On a Korean-locale Windows console (cp949), printing an em-dash from inside
+     Kit raises `UnicodeEncodeError` and can take the whole app down — keep
+     script prints ASCII.
+- **Result:** ~39 K returns/frame, 11.65 M points over 300 frames; the top-down
+  view shows ground rings, cube faces, and physically correct occlusion shadows
+  behind each cube. The 140 MB `.npy` stays out of git (`output/` is ignored).
+- **Newton sighting:** Warp 1.8.2 logs "`warp.sim` is deprecated … transition to
+  the forthcoming Newton library" on every run — the engine transition described
+  in [notes/01](notes/01_physics_engines.md) is already visible in the logs.
 
 ## Study notes
 
