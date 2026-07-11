@@ -97,6 +97,6 @@ Checklist style; ✅ = answered in this note / hands-on, ☐ = open. One experim
 
 ### E. Hands-on TODOs in this repo
 - ✅ 03: articulated robot headless — Franka Panda, 9 DOF, joint targets tracked to 0.0044 rad
-- ☐ 04: multi-annotator capture (RGB + depth + semantic segmentation)
-- ☐ 05: domain randomization pass over the cube scene
+- ✅ 04: multi-annotator capture (RGB + depth + semantic segmentation) — pixel-aligned triplet, one render product
+- ✅ 05: domain randomization pass over the cube scene — rep.randomizer graph over World prims (rep-native scenes render black: no default lights)
 - ✅ 06: LiDAR point-cloud capture (ties to C) — RTX Example_Rotary, per-frame annotator polling

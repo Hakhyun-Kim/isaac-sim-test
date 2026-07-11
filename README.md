@@ -45,11 +45,17 @@ Running any script requires accepting the NVIDIA Omniverse EULA
 | 01 | `scripts/01_hello_physics.py` | Headless physics: cube drops onto ground plane, position logged per step | ✅ cube settles at exactly z = 0.250 m |
 | 02 | `scripts/02_synthetic_camera.py` | Synthetic data: render the scene to an RGB PNG via Replicator | ✅ 1280×720 RTX render, see below |
 | 03 | `scripts/03_articulation_franka.py` | Articulation: command joint targets on a Franka Panda (9 DOF), headless | ✅ max joint error 1.39 → 0.0044 rad in 80 steps |
+| 04 | `scripts/04_multi_annotator.py` | Pixel-aligned RGB + depth + semantic segmentation from one render product | ✅ 3 classes labeled, depth 3.7–10.3 m |
+| 05 | `scripts/05_domain_randomization.py` | Replicator randomizer graph: cube pose/rotation/color re-rolled per frame | ✅ 8-frame contact sheet |
 | 06 | `scripts/06_lidar_pointcloud.py` | RTX LiDAR (Example_Rotary) scan → point cloud .npy + top-down view | ✅ 11.65 M points over 300 frames (~39 K/frame) |
 
 ![Synthetic RGB render: three cubes on the default ground plane](assets/synthetic_rgb.png)
 
 ![LiDAR top-down view: ground rings, cube faces, and occlusion shadows](assets/lidar_topdown.png)
+
+![RGB, depth, and semantic segmentation of the same frame](assets/multi_annotator.png)
+
+![Domain randomization contact sheet: first tile is the un-randomized spawn, the rest re-rolled](assets/domain_randomization.png)
 
 ## Notes & findings (2026-07-11)
 
@@ -99,6 +105,27 @@ min spec is workable for small scenes, at least without a viewport.
 - **Newton sighting:** Warp 1.8.2 logs "`warp.sim` is deprecated … transition to
   the forthcoming Newton library" on every run — the engine transition described
   in [notes/01](notes/01_physics_engines.md) is already visible in the logs.
+
+### Findings from experiments 04 & 05
+
+- **Multi-annotator capture worked first try:** semantics via
+  `add_update_semantics()` per prim, then `rgb`, `distance_to_image_plane`, and
+  `semantic_segmentation` (with `init_params={"colorize": True}`) attached to one
+  render product give pixel-aligned ground truth; the segmentation `info.idToLabels`
+  maps mask colors back to classes.
+- **Replicator-native scenes have no default lighting.** A scene built purely with
+  `rep.create.*` (plane, cubes, dome/distant lights) rendered black headless in 5.1 —
+  the lights never took effect in the `rep.new_layer()` flow (not root-caused).
+  The working pattern: build the scene with `World` + `DynamicCuboid` (the default
+  ground plane brings working lights), then drive randomization through the
+  Replicator graph — `rep.get.prims(semantics=...)` inside a registered randomizer
+  with `rep.modify.pose` + `rep.randomizer.color`, triggered by `rep.trigger.on_frame`.
+- **Warm-up frames:** the first `rep.orchestrator.step()` can return an empty
+  annotator buffer — skip empties and over-provision the trigger's `num_frames`.
+  (Same lesson as the LiDAR per-frame polling, from the other direction.)
+- The contact sheet's first tile still shows the un-randomized spawn row — the
+  first trigger lands on the following captured frame. Kept as-is: it makes a
+  nice before/after.
 
 ## Study notes
 

@@ -13,12 +13,15 @@ documented in README.md **including failures**.
 ## Current status (as of 2026-07-11, night)
 
 - **Repo is PUBLIC** (user flipped it); cited in the NVIDIA DevRel resume.
-- **Four experiments passed** on the RTX 3050 Ti 4 GB, headless: 01 physics (z=0.250 m
-  exact), 02 Replicator RGB (assets/synthetic_rgb.png), 03 Franka articulation (9 DOF,
-  joint error 1.39→0.0044 rad in 80 steps), 06 RTX LiDAR (11.65 M points,
-  assets/lidar_topdown.png). All results + gotchas in README findings sections.
-- Remaining question-bank experiments: 04 multi-annotator (RGB+depth+semantic),
-  05 domain randomization.
+- **All six planned experiments passed** on the RTX 3050 Ti 4 GB, headless: 01 physics
+  (z=0.250 m exact), 02 Replicator RGB, 03 Franka articulation (joint error
+  1.39→0.0044 rad), 04 multi-annotator (RGB+depth+semantic, pixel-aligned),
+  05 domain randomization (8-frame contact sheet via rep.randomizer graph),
+  06 RTX LiDAR (11.65 M points). Results + gotchas in README findings sections.
+- Experiment 05 extra gotcha: pure rep.create.* scenes render BLACK headless (lights
+  never take effect; not root-caused) — build scenes with World/DynamicCuboid and drive
+  randomization via rep.get.prims + registered randomizer instead. First orchestrator
+  step may return empty annotator buffers (warm-up) — skip and over-provision triggers.
 - Key gotchas for future scripts (details in README):
   - Kit swallows `print()` into `.venv/Lib/site-packages/isaacsim/kit/logs/Kit/Isaac-Sim Python/5.1/kit_*.log` (`[py stdout]` lines).
   - RTX lidar in 5.1: don't use `LidarRtx.get_current_frame()` (empty) or the deprecated
