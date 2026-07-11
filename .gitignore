@@ -1,0 +1,12 @@
+# virtual env
+.venv/
+env_isaacsim/
+
+# python
+__pycache__/
+*.pyc
+
+# omniverse/kit caches & logs that land in the project
+.cache/
+logs/
+*.log
