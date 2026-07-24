@@ -48,6 +48,7 @@ Running any script requires accepting the NVIDIA Omniverse EULA
 | 04 | `scripts/04_multi_annotator.py` | Pixel-aligned RGB + depth + semantic segmentation from one render product | ✅ 3 classes labeled, depth 3.7–10.3 m |
 | 05 | `scripts/05_domain_randomization.py` | Replicator randomizer graph: cube pose/rotation/color re-rolled per frame | ✅ 8-frame contact sheet |
 | 06 | `scripts/06_lidar_pointcloud.py` | RTX LiDAR (Example_Rotary) scan → point cloud .npy + top-down view | ✅ 11.65 M points over 300 frames (~39 K/frame) |
+| 07 | `scripts/07_openusd_simready.py` | OpenUSD authoring: build a sim-ready scene file-first with the pxr API alone (instanceable references, materials, UsdPhysics schemas), validate by traversal, then simulate the file as-is | ✅ 15/15 checks; 1 prototype backing 3 instances; all cubes settle at exactly z = 0.250 m |
 
 ![Synthetic RGB render: three cubes on the default ground plane](assets/synthetic_rgb.png)
 
@@ -127,6 +128,38 @@ min spec is workable for small scenes, at least without a viewport.
   first trigger lands on the following captured frame. Kept as-is: it makes a
   nice before/after.
 
+### Findings from experiment 07 (2026-07-24)
+
+The OpenUSD experiment inverts the usual flow: instead of building the scene through
+Isaac Sim helpers, the **file** is authored first — pure `pxr` API, no editor, no
+`isaacsim.*` imports — and Isaac Sim then has to consume it as-is.
+
+- **The file carries all the simulation semantics.** A `.usda` authored with nothing
+  but `Usd`/`UsdGeom`/`UsdShade`/`UsdPhysics` (physics scene, static ground collider,
+  rigid-body cubes) opens in Isaac Sim and simulates correctly with zero
+  Isaac-specific setup: `open_stage(path)` → `World()` → step. `World()` reuses the
+  authored physics scene rather than adding its own (verified in a follow-up run:
+  the live stage holds exactly one `UsdPhysics.Scene`, at the authored
+  `/World/physicsScene` path). All three cubes settle at exactly z = 0.250 m —
+  same exactness as experiment 01, but from an externally authored file.
+- **Instanceable references + physics compose cleanly:** the cube asset lives in its
+  own layer (`07_cube_proto.usda`) with `CollisionAPI` and a bound
+  `UsdPreviewSurface` material *inside the prototype*; the scene references it three
+  times with `instanceable = true` and applies `RigidBodyAPI` + `MassAPI` on each
+  instance root. Validation shows 1 prototype backing 3 instances, and PhysX
+  resolves the colliders through instance proxies without complaint.
+- **Validation-by-traversal is cheap and catches the right things:** stage metadata
+  (defaultPrim, upAxis, metersPerUnit), instancing actually consolidating,
+  physics APIs present, and material bindings resolving through instance proxies —
+  15 checks, pure USD introspection, before the simulator ever runs. A miniature
+  of the SimReady asset-validation idea.
+- **Physics writes back to USD here:** `ComputeLocalToWorldTransform` on the pxr
+  stage tracked `SingleRigidPrim.get_world_pose()` exactly, every step, headless
+  with `render=False` — the dual readback was logged side by side to check this.
+- **Fastest experiment yet (~1 min total):** an all-local scene skips the
+  Omniverse cloud-asset fetch that made experiment 01's first steps take minutes —
+  no `add_default_ground_plane()`, no remote robot USD, no stall.
+
 ## Study notes
 
 - [notes/01_physics_engines.md](notes/01_physics_engines.md) — Havok vs PhysX vs CARLA/Unreal
@@ -135,6 +168,7 @@ min spec is workable for small scenes, at least without a viewport.
 
 ### Next steps
 
-- Drive an articulated robot (e.g., a wheeled base or simple arm) headless
-- Multi-annotator synthetic data: depth + semantic segmentation alongside RGB
-- Try domain randomization via `isaacsim.replicator.domain_randomization`
+- OpenUSD composition beyond references: variants (e.g., cube size/material variants
+  on the same prototype) and payloads on a larger scene
+- URDF import → drive the resulting articulation headless
+- First look at Isaac Lab on this hardware (expectations low at 4 GB)

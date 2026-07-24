@@ -4,13 +4,24 @@
 
 Isaac Sim hands-on study repo. Purpose: honest, verifiable exposure to NVIDIA AI software
 (Isaac Sim) ahead of an NVIDIA **Developer Relations Manager — Robotics/Physical AI (APAC)**
-application. The owner's resume anchors on 42dot (UE4/CARLA AV sensor-validation simulator),
+application (and, as of 2026-07, also the **Senior Omniverse Engineer, Physical Simulation**
+Seoul application — experiment 07 was added to cover that JD's OpenUSD line). The owner's resume anchors on 42dot (UE4/CARLA AV sensor-validation simulator),
 Havok physics middleware, and Varjo GPU pipelines — this repo adds the missing
 "Exposure to NVIDIA AI Software" piece. Style: learning-in-public, same as
 github.com/Hakhyun-Kim/deep-learning-study — every experiment scripted, reproducible,
 documented in README.md **including failures**.
 
-## Current status (as of 2026-07-11, night)
+## Current status
+
+- **2026-07-24: experiment 07 (OpenUSD) passed first try, ~1 min total** — sim-ready scene
+  authored file-first with pure pxr (instanceable references to a proto layer, UsdShade
+  material, UsdPhysics schemas; RigidBodyAPI/MassAPI on instance roots, CollisionAPI inside
+  the prototype), 15/15 traversal-validation checks, then opened as-is in Isaac Sim: all
+  3 cubes settle at exactly z=0.250. Patterns that worked: `open_stage(path)` then `World()`
+  picks up the authored UsdPhysics.Scene; physics writes back to USD headless (pxr readback
+  == SingleRigidPrim readback every step); all-local scenes skip the cloud-asset stall.
+
+## Status as of 2026-07-11 (experiments 01-06)
 
 - **Repo is PUBLIC** (user flipped it); cited in the NVIDIA DevRel resume.
 - **All six planned experiments passed** on the RTX 3050 Ti 4 GB, headless: 01 physics
